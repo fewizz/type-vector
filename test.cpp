@@ -28,8 +28,7 @@ void exec(std::vector<std::string> args) {
 	SAME( tl3::append_t<void> , tl )
 	SAME( tl3::append_t<type_vector<void>> , tl )
 	SAME( tl::erase_t<3> , tl3 )
-	SAME( tl::erase_t<3> , tl3 )
-	SAME( tl::erase_t<3> , tl3 )
+	SAME( tl::erase_first_t<void> , tl3 )
 	EQUALS( tl3::contains_v<void> , false )
 	EQUALS( tl::contains_v<char> , true )
 }

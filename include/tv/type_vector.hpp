@@ -157,6 +157,19 @@ public:
 	template<int index>
 	using erase_t = typename erase<index>::type;
 	
+	template<class T>
+	struct erase_first {
+		using type = erase_t<find_v<T>>;
+	};
+
+	template<class T>
+	using erase_first_t = typename erase_first<T>::type;
+	
+	template<class T>
+	struct erase<-1, T> {
+		using type = erase<find_v<T>>::type;
+	};
+	
 	struct erase_front {
 		using type = erase_t<0>;
 	};
