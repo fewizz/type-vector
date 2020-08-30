@@ -53,7 +53,7 @@ public:
 	struct find {
 		template<int index, class... Unused>
 		struct of {
-			static constexpr unsigned value =
+			static constexpr int value =
 				std::is_same_v<
 					T, at_t<index>
 				> ? index : of<index+1>::value;
@@ -61,14 +61,14 @@ public:
 		
 		template<class...Unused>
 		struct of<sizeof...(Ts), Unused...> {
-			static constexpr unsigned value = -1;
+			static constexpr int value = -1;
 		};
 
 		static constexpr int value = of<0>::value;
 	};
 
 	template<class T>
-	static constexpr unsigned find_v = find<T>::value;
+	static constexpr int find_v = find<T>::value;
 	
 	template<class T>
 	struct push_front { using type = type_vector<T, Ts...>; };
