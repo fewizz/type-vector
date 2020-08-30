@@ -167,7 +167,7 @@ public:
 	
 	template<class T>
 	struct erase<-1, T> {
-		using type = erase<find_v<T>>::type;
+		using type = typename erase<find_v<T>>::type;
 	};
 	
 	struct erase_front {
