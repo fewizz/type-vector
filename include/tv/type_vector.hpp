@@ -15,6 +15,11 @@ public:
 		struct of {
 			using type = invalid_t;
 		};
+
+		template<class...Unused>
+		struct of<-1, Unused...> {
+			using type = invalid_t;
+		};
 		
 		template<int index0, class Head, class... Tail>
 		struct of<index0, Head, Tail...> {
@@ -39,7 +44,7 @@ public:
 	using front_t = typename front::type;
 	
 	struct back {
-		using type = at_t<sizeof...(Ts)-1>;
+		using type = at_t<(int)sizeof...(Ts)-1>;
 	};
 	
 	using back_t = typename back::type;
@@ -177,7 +182,7 @@ public:
 	using erase_front_t = typename erase_front::type;
 	
 	struct erase_back {
-		using type = erase_t<sizeof...(Ts)-1>;
+		using type = erase_t<(int)sizeof...(Ts)-1>;
 	};
 	
 	using erase_back_t = typename erase_back::type;
