@@ -164,6 +164,7 @@ struct type_vector {
 	
 	template<std::size_t index, class...Unused>
 	struct erase {
+		static_assert(index >= 0 and index < size_v, "index out of bounds");
 		using type = typename cut_until_t<index>::template append_t<cut_from_t<index+1>>;
 	};
 
