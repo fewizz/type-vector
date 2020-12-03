@@ -9,27 +9,61 @@
 namespace tv {
 
 template<class... Ts>
+struct type_vector;
+
+static constexpr std::size_t not_found_v = std::numeric_limits<std::size_t>::max();
+
+namespace internal {
+	using namespace std;
+
+	// at
+	template<size_t index, class Head, class... Tail>
+	struct at { using type = typename at<index-1, Tail...>::type; };
+
+	template<class T, class... Tail>
+	struct at<0, T, Tail...> { using type = T; };
+
+	// find
+	template<size_t index, class TF, class T, class...Ts>
+	requires (is_same_v<TF, T>)
+	static constexpr size_t find() { return index; }
+
+	template<size_t index, class TF, class... Ts>
+	requires (sizeof...(Ts) == 0)
+	static constexpr size_t find() { return not_found_v; }
+
+	template<size_t index, class TF, class T, class...Ts>
+	requires (not is_same_v<TF, T>)
+	static constexpr size_t find() {
+		return find<index + 1, TF, Ts...>();
+	}
+
+	// cut
+	template<size_t begin, size_t end, class Result, class... Ts>
+	struct cut {
+		using type = typename cut<begin+1, end, typename Result::template push_back_t<typename at<begin, Ts...>::type>, Ts...>::type;
+	};
+
+	template<size_t i, class Result, class... Ts>
+	struct cut<i, i, Result, Ts...> {
+		using type = Result;
+	};
+
+};
+
+template<class... Ts>
 struct type_vector {
 	static constexpr std::size_t size_v = sizeof...(Ts);
+	static constexpr std::size_t size() { return size_v; }
 	static constexpr bool empty_v = size_v == 0;
-	static constexpr std::size_t not_found_v = std::numeric_limits<std::size_t>::max();
+	static constexpr bool empty() { return empty_v; }
 
 	template<std::size_t index>
 	struct at {
 		static_assert(!empty_v, "type vector is empty");
 		static_assert(index >= 0 && index < size_v, "index out of bounds");
-		
-		template<std::size_t index0, class Head, class... Tail>
-		struct of {
-			using type = typename of<index0+1, Tail...>::type;
-		};
 
-		template<class T, class... Tail>
-		struct of<index, T, Tail...> {
-			using type = T;
-		};
-
-		using type = typename of<0, Ts...>::type;
+		using type = typename internal::at<index, Ts...>::type;
 	};
 
 	template<std::size_t index>
@@ -55,23 +89,7 @@ struct type_vector {
 	
 	template<class T, std::size_t = size_v>
 	struct find {
-		template<std::size_t index, class... Unused>
-		struct in {
-			static constexpr std::size_t value =
-				std::is_same_v<
-					T, at_t<index>
-				> ? index : in<index+1>::value;
-		};
-		
-		template<class... Unused>
-		struct in<size_v-1, Unused...> {
-			static constexpr std::size_t value =
-				std::is_same_v<
-				T, at_t<size_v-1>
-				> ? size_v-1 : not_found_v;
-		};
-
-		static constexpr std::size_t value = in<0>::value;
+		static constexpr std::size_t value = internal::find<0, T, Ts...>();
 	};
 
 	template<class T>
@@ -90,6 +108,9 @@ struct type_vector {
 	template<class T> static constexpr bool contains_v = contains<T>::value;
 
 	template<class T>
+	static constexpr bool contains_ce() {return contains_v<T>;}
+
+	template<class T>
 	struct push_front { using type = type_vector<T, Ts...>; };
 
 	template<class T>
@@ -101,28 +122,12 @@ struct type_vector {
 	template<class T>
 	using push_back_t = typename push_back<T>::type;
 	
-	template<std::size_t beginIn, std::size_t endEx, std::size_t = size_v>
+	template<std::size_t begin, std::size_t end, std::size_t = size_v>
 	struct cut {
-		static_assert(endEx - beginIn <= size_v, "range of bounds");
-		static_assert(endEx - beginIn >= 0, "size of new type vector is negative");
+		static_assert(end - begin <= size_v, "range of bounds");
+		static_assert(end - begin >= 0, "size of new type vector is negative");
 
-		template<std::size_t index, class Result>
-		struct in {
-			using type =
-				typename in<
-					index+1,
-					typename Result::template push_back_t<
-						at_t<index>
-					>
-				>::type;
-		};
-
-		template<class Result>
-		struct in<endEx, Result> {
-			using type = Result;
-		};
-
-		using type = typename in<beginIn, type_vector<>>::type;
+		using type = typename internal::cut<begin, end, type_vector<>, Ts...>::type;
 	};
 
 	template<std::size_t beginIn, std::size_t endEx>

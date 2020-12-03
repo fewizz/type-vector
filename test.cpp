@@ -7,7 +7,7 @@
 
 using namespace tv;
 
-void exec(std::vector<std::string> args) {
+int main() {
 	using tl = type_vector<int, bool, char, void>;
 	using tl3 = type_vector<int, bool, char>;
 	using ti = type_vector<int>;
@@ -31,7 +31,7 @@ void exec(std::vector<std::string> args) {
 	SAME( tl3::append_t<type_vector<void>> , tl )
 	SAME( tl::erase_t<3> , tl3 )
 	SAME( tl::erase_first_t<void> , tl3 )
-	EQUALS( tl3::contains_v<void> , false )
+	EQUALS( tl3::contains_ce<void>() , false )
 	EQUALS( tl::contains_v<char> , true )
 	EQUALS( tl::contains_v<long long> , false )
 	EQUALS( ti::contains_v<int> , true )
