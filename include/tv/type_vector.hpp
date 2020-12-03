@@ -108,9 +108,6 @@ struct type_vector {
 	template<class T> static constexpr bool contains_v = contains<T>::value;
 
 	template<class T>
-	static constexpr bool contains_ce() {return contains_v<T>;}
-
-	template<class T>
 	struct push_front { using type = type_vector<T, Ts...>; };
 
 	template<class T>
